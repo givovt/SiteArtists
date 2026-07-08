@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль {{ artist['username'] }} — ArtPlatform</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #10b981;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-main); padding-top: 85px; }
+
+        /* Шапка */
+        .navbar { position: fixed; top: 0; left: 0; right: 0; height: 65px; background: var(--card-bg); border-bottom: 1px solid var(--border); display: table; width: 100%; padding: 0 40px; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .nav-container { display: table-row; }
+        .nav-logo { display: table-cell; vertical-align: middle; font-size: 1.35em; font-weight: 700; color: var(--primary); text-decoration: none; }
+        .nav-links { display: table-cell; vertical-align: middle; text-align: right; }
+        .nav-btn { display: inline-block; text-decoration: none; color: var(--text-main); font-weight: 500; margin-left: 20px; padding: 8px 16px; border-radius: 6px; }
+        .nav-btn.primary { background: var(--primary); color: white; }
+
+        /* Двухколоночный контейнер */
+        .main-wrapper { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: table; width: 100%; border-spacing: 30px 0; }
+        .column-left { display: table-cell; width: 320px; vertical-align: top; }
+        .column-right { display: table-cell; vertical-align: top; }
+
+        /* Левая карточка (Профиль) */
+        .author-sidebar { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border); text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 4px solid #f1f5f9; }
+        .profile-title { font-size: 1.6em; font-weight: 800; margin-bottom: 10px; }
+        .profile-bio { color: var(--text-muted); font-size: 0.95em; line-height: 1.5; text-align: left; }
+
+        /* Правая колонка (Услуги и Прайс) */
+        .section-title { font-size: 1.4em; font-weight: 700; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+        .service-card { border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; border-radius: 12px; background: var(--card-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .service-title { font-size: 1.3em; font-weight: 700; margin-bottom: 5px; }
+        .base-price { font-size: 1.05em; color: var(--text-muted); margin-bottom: 15px; }
+        
+        .option-item { margin: 10px 0; background: #f8fafc; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .option-item label { display: block; cursor: pointer; font-size: 0.95em; }
+        .option-item input { margin-right: 10px; }
+
+        .total-price { font-size: 1.3em; font-weight: 700; color: var(--accent); margin: 20px 0; }
+        .btn-order { background-color: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; width: 100%; }
+        .btn-order:hover { background-color: var(--primary-hover); }
+
+        /* Галерея внутри правой части */
+        .portfolio-container { margin-top: 40px; }
+        .portfolio-grid { display: block; letter-spacing: -0.5em; }
+        .portfolio-item { display: inline-block; letter-spacing: normal; vertical-align: top; width: calc(50% - 10px); margin-right: 20px; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--card-bg); }
+        .portfolio-item:nth-child(2n) { margin-right: 0; }
+        .portfolio-img { width: 100%; height: 200px; object-fit: cover; }
+        .portfolio-desc { padding: 15px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="nav-logo">ArtPlatform</a>
+        <div class="nav-links">
+            <a href="/" class="nav-btn">Каталог</a>
+            <a href="/add_service" class="nav-btn">Добавить услугу</a>
+            <a href="/login" class="nav-btn">Мой Аккаунт</a>
+        </div>
+    </div>
+</nav>
+
+<div class="main-wrapper">
+    <div class="column-left">
+        <div class="author-sidebar">
+            <img src="{{ artist['avatar_url'] if artist['avatar_url'] else 'https://placehold.co/150' }}" class="profile-avatar" alt="avatar">
+            <h1 class="profile-title">{{ artist['username'] }}</h1>
+            <p class="profile-bio">{{ artist['bio'] }}</p>
+        </div>
+    </div>
+
+    <div class="column-right">
+        <h2 class="section-title">Услуги и заказ арта</h2>
+        
+        {% for service in services %}
+        <div class="service-card">
+            <div class="service-title">{{ service['title'] }}</div>
+            
+            <form action="/order" method="POST" class="order-form">
+                <input type="hidden" name="service_id" value="{{ service['id'] }}">
+                
+                <div style="margin-bottom: 15px;">
+                    <div class="options-title" style="margin-bottom: 8px;">Выберите тип арта:</div>
+                    {% for variant in service['variants'] %}
+                    <div style="margin: 6px 0;">
+                        <label style="cursor: pointer; font-weight: 500;">
+                            <input type="radio" name="variant_id" value="{{ variant['id'] }}" 
+                                   class="variant-radio" data-price="{{ variant['price'] }}" 
+                                   {% if loop.first %}checked{% endif %}>
+                            {{ variant['variant_title'] }} — <strong>${{ variant['price'] }}</strong>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if service['options'] %}
+                    <div class="options-title" style="margin-bottom: 8px; margin-top: 15px;">Дополнительно:</div>
+                    {% for option in service['options'] %}
+                    <div class="option-item">
+                        <label>
+                            <input type="checkbox" name="options" value="{{ option['id'] }}" 
+                                   class="option-checkbox" data-price="{{ option['additional_price'] }}">
+                            {{ option['option_title'] }} (+${{ option['additional_price'] }})
+                        </label>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="total-price">
+                    Итоговая стоимость: $<span class="price-display">0.00</span>
+                </div>
+                
+                <button type="submit" class="btn-order">Заказать</button>
+            </form>
+        </div>
+        {% endfor %}
+
+        <div class="portfolio-container">
+            <h2 class="section-title">Портфолио</h2>
+            <div class="portfolio-grid">
+                {% for work in works %}
+                <div class="portfolio-item">
+                    <img src="{{ work['image_url'] }}" class="portfolio-img">
+                    <div class="portfolio-desc">
+                        {{ work['title'] }}
+                        {% if work['is_for_sale'] == 1 %}
+                            <div style="color: var(--accent); font-size: 0.85em; margin-top: 5px;">Продаётся копия: ${{ work['price'] }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.order-form').forEach(form => {
+        const checkboxes = form.querySelectorAll('.option-checkbox');
+        const priceDisplay = form.querySelector('.price-display');
+        const basePrice = parseFloat(priceDisplay.getAttribute('data-base'));
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                let currentTotal = basePrice;
+                checkboxes.forEach(cb => {
+                    if (cb.checked) currentTotal += parseFloat(cb.getAttribute('data-price'));
+                });
+                priceDisplay.textContent = currentTotal.toFixed(2);
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
